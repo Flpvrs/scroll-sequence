@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll Frame Animation</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow-x: hidden;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      z-index: 1;
+    }
+    .scroll-space {
+      height: 6000px;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="hero-canvas"></canvas>
+<div class="scroll-space"></div>
+
+<script>
+  const canvas = document.getElementById("hero-canvas");
+  const context = canvas.getContext("2d");
+
+  const frameCount = 445;
+  const currentFrame = index =>
+    `frames/input_${String(index).padStart(6, '0')}.jpg`;
+
+  const preloadImages = () => {
+    for (let i = 1; i <= frameCount; i++) {
+      const img = new Image();
+      img.src = currentFrame(i);
+    }
+  };
+
+  const img = new Image();
+  img.src = currentFrame(1);
+  img.onload = function () {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    context.drawImage(img, 0, 0);
+  };
+
+  const updateImage = index => {
+    const image = new Image();
+    image.src = currentFrame(index);
+    image.onload = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0);
+    };
+  };
+
+  window.addEventListener("scroll", () => {
+    const scrollTop = document.documentElement.scrollTop;
+    const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollFraction = scrollTop / maxScrollTop;
+    const frameIndex = Math.min(
+      frameCount,
+      Math.ceil(scrollFraction * frameCount)
+    );
+    requestAnimationFrame(() => updateImage(frameIndex));
+  });
+
+  preloadImages();
+</script>
+
+</body>
+</html>
